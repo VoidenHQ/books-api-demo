@@ -1,0 +1,5 @@
+node_modules/
+result.json
+.DS_Store
+api-tests/.voiden/*
+!api-tests/.voiden/env-*public.yaml

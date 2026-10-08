@@ -1,0 +1,49 @@
+name: API tests (Voiden)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Start the Books API from this commit
+        run: |
+          node server.js &
+          for i in $(seq 1 20); do
+            curl -sf http://localhost:3000/health && exit 0
+            sleep 0.5
+          done
+          echo "API did not start" && exit 1
+
+      - name: Install voiden-runner
+        run: npm install -g @voiden/runner
+
+      - name: Run the .void tests
+        run: |
+          voiden-runner run api-tests \
+            --env .env.ci \
+            --no-session \
+            --fail-on-error \
+            --output-json result.json
+
+      # voiden-runner's exit code covers failed requests; this step also
+      # fails the job on any failed assertion in the report.
+      - name: Check assertions
+        run: node scripts/check-assertions.js result.json
+
+      - name: Upload the run report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: voiden-run-report
+          path: result.json

@@ -1,0 +1,5 @@
+local:
+  displayName: "Local"
+  variables:
+    base_url: "http://localhost:3000"
+    api_key: "demo-key"

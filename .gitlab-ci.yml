@@ -1,0 +1,18 @@
+stages:
+  - test
+
+api-tests:
+  stage: test
+  image: node:20
+  script:
+    - node server.js &
+    - for i in $(seq 1 20); do curl -sf http://localhost:3000/health && break || sleep 0.5; done
+    - npm install -g @voiden/runner
+    - voiden-runner run api-tests --env .env.ci --no-session --fail-on-error --output-json result.json
+    # voiden-runner's exit code covers failed requests; this also fails the
+    # job on any failed assertion in the report.
+    - node scripts/check-assertions.js result.json
+  artifacts:
+    when: always
+    paths:
+      - result.json
