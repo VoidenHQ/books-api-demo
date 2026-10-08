@@ -25,7 +25,7 @@ reset();
 function toResponse(book) {
   return {
     id: book.id,
-    title: book.title,
+    name: book.title,
     author: book.author,
     price: book.price,
     inStock: book.inStock,
